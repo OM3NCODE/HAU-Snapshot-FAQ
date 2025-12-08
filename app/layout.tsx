@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Montserrat, Luckiest_Guy } from "next/font/google";
 import localFont from "next/font/local";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
 
 // Google Fonts
@@ -36,8 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${montserrat.variable} ${luckiestGuy.variable} ${sugarBomb.variable} antialiased bg-[#2D0A31] text-white`}
+        className={`${montserrat.variable} ${luckiestGuy.variable} ${sugarBomb.variable} antialiased bg-hau-gradient text-white min-h-screen flex flex-col`}
       >
+        <Navbar />
         {children}
       </body>
     </html>

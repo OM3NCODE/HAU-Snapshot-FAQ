@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero"; 
 import FAQSidebar from "@/components/FAQSidebar";
 import FAQList from "@/components/FAQList";
@@ -21,7 +20,6 @@ export default function FAQPage() {
   return (
     <div className="min-h-screen bg-hau-gradient text-white overflow-x-hidden relative flex flex-col">
       
-      <Navbar />
       <Hero onSearch={setSearchQuery} />
 
       <main className="w-full max-w-[1080px] mx-auto px-[20px] py-[20px] mt-10 relative z-10 flex-grow pb-32">
