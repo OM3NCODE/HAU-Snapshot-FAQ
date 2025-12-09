@@ -20,7 +20,7 @@ export default function PrizesPage() {
   // Handle claim button click
   const handleClaim = () => {
     if (hasIRLPrizes) {
-      router.push("/claim-prize/IRL-Form");
+      router.push("/IRL-Form");
     } else {
       router.push("/claim-prize/token-only");
     }

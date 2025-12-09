@@ -1,16 +1,18 @@
 "use client";
 // Connect wallet page in claiming prizes section [ENTRY FOR USER]
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import BreathingItem from "@/components/Claim_Breathing_prizes";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function ClaimPrizePage() {
-
+    const router = useRouter();
     const[walletAddress, setWalletAddress] = useState<string | null>(null);
 
     const handleConnect = () => {
-    setWalletAddress("8x...42a");
+        setWalletAddress("8x...42a");
+        router.push("/claim-prize/prizes"); // [TODO Backend] Navigate to prizes page after connecting 
     };
 
     return (

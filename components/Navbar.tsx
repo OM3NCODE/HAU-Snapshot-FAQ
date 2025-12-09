@@ -88,9 +88,9 @@ export default function Navbar() {
       {/* --- MOBILE MENU DROPDOWN --- */}
       {isMobileMenuOpen && (
         <div className="absolute top-[70px] left-0 w-full bg-[#2D0A31]/95 backdrop-blur-md border-b border-white/10 p-6 flex flex-col gap-6 items-center text-white font-montserrat font-bold text-xl lg:hidden shadow-2xl animate-in slide-in-from-top-5">
-          <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-hau-pink">Home</Link>
-          <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-hau-pink">Claim Prize</Link>
-          <Link href="#" onClick={() => setIsMobileMenuOpen(false)} className="text-hau-pink drop-shadow-[0_0_5px_#D900FF]">FAQ&apos;s</Link>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className={isActive("/") ? "text-hau-pink drop-shadow-[0_0_5px_#D900FF]" : "hover:text-hau-pink"}>Home</Link>
+          <Link href="/claim-prize" onClick={() => setIsMobileMenuOpen(false)} className={isActive("/claim-prize") ? "text-hau-pink drop-shadow-[0_0_5px_#D900FF]" : "hover:text-hau-pink"}>Claim Prize</Link>
+          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-hau-pink">FAQ&apos;s</Link>
         </div>
       )}
 

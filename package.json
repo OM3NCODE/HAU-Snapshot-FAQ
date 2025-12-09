@@ -10,14 +10,15 @@
   },
   "dependencies": {
     "clsx": "^2.1.1",
+    "country-flag-icons": "^1.5.13",
+    "country-state-city": "^3.2.1",
     "framer-motion": "^12.23.25",
     "googleapis": "^143.0.0",
     "lucide-react": "^0.555.0",
     "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "tailwind-merge": "^3.4.0",
-    "country-state-city": "^3.4.3"
+    "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

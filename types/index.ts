@@ -17,6 +17,7 @@ export interface Prize {
     prizeImage: string; // Path to prize image (front of card)
     tokens?: number; // Number of tokens (if applicable)
     isIRL: boolean; // Is this a physical/IRL prize
+    prizeType: "shirt" | "cap" | "visor" | "wine" | "rune"; // Type of prize
     traitName: string; // Name of the trait that won this prize
     traitIcons: string[]; // Array of trait icon paths (for card back)
 }
