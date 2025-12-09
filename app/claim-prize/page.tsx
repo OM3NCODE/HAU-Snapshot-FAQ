@@ -1,5 +1,5 @@
 "use client";
-
+// Connect wallet page in claiming prizes section [ENTRY FOR USER]
 import { useState } from "react";
 import BreathingItem from "@/components/Claim_Breathing_prizes";
 import Image from "next/image";
