@@ -1,17 +1,85 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, Minus } from "lucide-react";
 import Image from "next/image";
 import { Question } from "@/types";
 
+// Helper function to parse text and make URLs and handles clickable
+function parseTextWithLinks(text: string) {
+  // Split by newlines first to preserve formatting
+  const lines = text.split('\n');
+  
+  return lines.map((line, lineIndex) => {
+    // Regex patterns for URLs and X handles
+    const urlPattern = /(\b(?:https?:\/\/)?(?:www\.)?[\w-]+\.[\w.-]+(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=%]*)?)/gi;
+    const handlePattern = /(@\w+)/g;
+    
+    // Combine patterns
+    const combinedPattern = /(\b(?:https?:\/\/)?(?:www\.)?[\w-]+\.[\w.-]+(?:\/[\w\-._~:/?#[\]@!$&'()*+,;=%]*)?|@\w+)/gi;
+    
+    const parts = line.split(combinedPattern);
+    
+    return (
+      <span key={lineIndex}>
+        {parts.map((part, index) => {
+          // Check if it's a URL
+          if (part && part.match(urlPattern)) {
+            const href = part.startsWith('http') ? part : `https://${part}`;
+            return (
+              <a
+                key={index}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#FF00FC] hover:text-[#ff6bff] underline transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {part}
+              </a>
+            );
+          }
+          // Check if it's an X handle
+          else if (part && part.match(handlePattern)) {
+            const handle = part.substring(1); // Remove @
+            return (
+              <a
+                key={index}
+                href={`https://x.com/${handle}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#FF00FC] hover:text-[#ff6bff] underline transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {part}
+              </a>
+            );
+          }
+          return part;
+        })}
+        {lineIndex < lines.length - 1 && '\n'}
+      </span>
+    );
+  });
+}
+
 interface FAQListProps {
   title: string;
   questions: Question[];
   monsterImage: string;
+  initialOpenId?: string | null;
 }
 
-export default function FAQList({ title, questions, monsterImage }: FAQListProps) {
-  const [openId, setOpenId] = useState<string | null>(questions[0]?.id || null);
+export default function FAQList({ title, questions, monsterImage, initialOpenId }: FAQListProps) {
+  const [openId, setOpenId] = useState<string | null>(initialOpenId || questions[0]?.id || null);
+
+  useEffect(() => {
+    // Sync open item when parent provides a new initialOpenId or question list changes
+    if (initialOpenId) {
+      setOpenId(initialOpenId);
+    } else {
+      setOpenId(questions[0]?.id || null);
+    }
+  }, [initialOpenId, questions]);
 
   return (
     <div className="relative w-full mt-12 md:mt-0"> {/* Added mt-12 on mobile to make room for the monster head */}
@@ -94,7 +162,7 @@ function AccordionItem({ item, isOpen, onClick }: { item: Question, isOpen: bool
     <motion.div 
       initial={false}
       animate={{ 
-        backgroundColor: isOpen ? "#2A05D8" : "#C970FF",
+        backgroundColor: isOpen ? "#4B1F96" : "#C970FF",
       }}
       style={{
         boxShadow: isOpen ? "0px 4px 15px rgba(255, 0, 252, 0.35)" : "none",
@@ -106,10 +174,10 @@ function AccordionItem({ item, isOpen, onClick }: { item: Question, isOpen: bool
         className="w-full flex items-center justify-between p-4 md:p-6 text-left relative z-10"
       >
         <span 
-            className="font-luckiest text-[18px] md:text-[24px] lg:text-[32px]"
+            className="font-sugar text-[10px] md:text-[24px] lg:text-[24px]"
             style={{
                 color: "#FF00FC",
-                WebkitTextStroke: "1.5px #2A05D8",
+                WebkitTextStroke: "3px #2A05D8",
                 paintOrder: "stroke fill",
                 letterSpacing: "0.05em"
             }}
@@ -131,10 +199,10 @@ function AccordionItem({ item, isOpen, onClick }: { item: Question, isOpen: bool
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
             <div 
-                className="px-4 md:px-6 pb-6 pt-[8px] md:pt-[12px] font-luckiest text-[12px] md:text-[14px] leading-relaxed text-justify"
-                style={{ color: "#FFC3FE" }}
+                className="px-4 md:px-6 pb-6 pt-[8px] md:pt-[5px] font-montserrat text-[12px] md:text-[16px] leading-relaxed text-justify whitespace-pre-line"
+                style={{ color: "#FFC3FE", letterSpacing: "0.02em" }}
             >
-              {item.answer}
+              {parseTextWithLinks(item.answer)}
             </div>
           </motion.div>
         )}

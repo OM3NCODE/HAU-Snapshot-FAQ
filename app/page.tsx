@@ -11,16 +11,71 @@ import { motion } from "framer-motion"; // Add this
 export default function FAQPage() {
   const [activeCategory, setActiveCategory] = useState(FAQ_DATA[0]);
   const [searchQuery, setSearchQuery] = useState("");
+  const [matchedQuestionId, setMatchedQuestionId] = useState<string | null>(FAQ_DATA[0].questions[0]?.id || null);
 
-  const filteredQuestions = activeCategory.questions.filter((item) =>
-    item.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.answer.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const findBestMatch = (query: string) => {
+    const trimmed = query.trim().toLowerCase();
+    if (!trimmed) return null;
+
+    let bestScore = 0;
+    let bestCategory = FAQ_DATA[0];
+    let bestQuestion = FAQ_DATA[0].questions[0] || null;
+
+    const terms = trimmed.split(/\s+/).filter(Boolean);
+
+    FAQ_DATA.forEach((category) => {
+      category.questions.forEach((q) => {
+        const questionLower = q.question.toLowerCase();
+        const answerLower = q.answer.toLowerCase();
+        let score = 0;
+
+        // Whole-query match boosts
+        if (questionLower.includes(trimmed)) score += 6;
+        if (answerLower.includes(trimmed)) score += 4;
+
+        // Term-by-term boosts
+        terms.forEach((term) => {
+          if (questionLower.includes(term)) score += 3;
+          if (answerLower.includes(term)) score += 1;
+          if (questionLower.startsWith(term)) score += 1; // slight bump for leading match
+        });
+
+        if (score > bestScore) {
+          bestScore = score;
+          bestCategory = category;
+          bestQuestion = q;
+        }
+      });
+    });
+
+    if (bestScore === 0 || !bestQuestion) return null;
+    return { category: bestCategory, question: bestQuestion };
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    const match = findBestMatch(query);
+
+    if (!match) {
+      // No strong match: reset to the first category, show its first item
+      setActiveCategory(FAQ_DATA[0]);
+      setMatchedQuestionId(FAQ_DATA[0].questions[0]?.id || null);
+      return;
+    }
+
+    setActiveCategory(match.category);
+    setMatchedQuestionId(match.question.id);
+  };
+
+  const questionsToShow =
+    searchQuery.trim() && matchedQuestionId
+      ? activeCategory.questions.filter((q) => q.id === matchedQuestionId)
+      : activeCategory.questions;
 
   return (
     <div className="min-h-screen bg-hau-gradient text-white overflow-x-hidden relative flex flex-col">
       
-      <Hero onSearch={setSearchQuery} />
+      <Hero onSearch={handleSearch} />
 
       <main className="w-full max-w-[1080px] mx-auto px-[20px] py-[20px] mt-10 relative z-10 flex-grow pb-32">
         
@@ -31,16 +86,21 @@ export default function FAQPage() {
                 <FAQSidebar 
                     categories={FAQ_DATA} 
                     activeId={activeCategory.id} 
-                    onSelect={setActiveCategory} 
+                onSelect={(cat) => {
+                  setActiveCategory(cat);
+                  setMatchedQuestionId(cat.questions[0]?.id || null);
+                }} 
                 />
             </div>
 
             {/* RIGHT COLUMN */}
             <div className="flex-grow w-full relative">
                 <FAQList 
-                    title={activeCategory.title} 
-                    questions={filteredQuestions}
-                    monsterImage={activeCategory.sideImage} 
+                key={`${activeCategory.id}-${matchedQuestionId || "all"}`}
+                title={activeCategory.title} 
+                questions={questionsToShow}
+                monsterImage={activeCategory.sideImage} 
+                initialOpenId={matchedQuestionId}
                 />
             </div>
 
