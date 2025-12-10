@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
-import { Prize } from "@/types";
+import { TraitPrizeMapping } from "@/data/traitPrizeMapping";
 
 interface PrizeCardProps {
-  prize: Prize;
+  prize: TraitPrizeMapping;
 }
 
 export default function PrizeCard({ prize }: PrizeCardProps) {
@@ -43,7 +43,7 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
             <div className="relative w-20 h-20 md:w-24 md:h-24 mb-2">
               <Image
                 src={prize.prizeImage}
-                alt={prize.name}
+                alt={prize.prizeName}
                 fill
                 className="object-contain"
                 unoptimized
@@ -54,7 +54,7 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
             <p className="font-luckiest text-[#FFB800] text-sm md:text-base text-center uppercase tracking-wide">
               {" "}
               {/* Golden yellow text */}
-              {prize.name}
+              {prize.prizeName}
             </p>
           </motion.div>
         ) : (
@@ -77,19 +77,15 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
               TRAIT
             </h3>
 
-            {/* Trait Icons */}
-            <div className="flex gap-2 mb-2">
-              {prize.traitIcons.map((icon, idx) => (
-                <div key={idx} className="relative w-10 h-10 md:w-12 md:h-12">
-                  <Image
-                    src={icon}
-                    alt="trait icon"
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
-              ))}
+            {/* Trait Icon */}
+            <div className="relative w-10 h-10 md:w-12 md:h-12 mb-2">
+              <Image
+                src={prize.traitIcon}
+                alt={prize.traitName}
+                fill
+                className="object-contain"
+                unoptimized
+              />
             </div>
 
             {/* Trait Name */}

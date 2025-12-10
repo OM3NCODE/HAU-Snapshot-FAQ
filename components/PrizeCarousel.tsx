@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Prize } from "@/types";
+import { TraitPrizeMapping } from "@/data/traitPrizeMapping";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import PrizeCard from "./PrizeCard";
 
 interface PrizeCarouselProps {
-  prizes: Prize[];
+  prizes: TraitPrizeMapping[];
   onClaimClick: () => void;
   showInfo: boolean;
   setShowInfo: (show: boolean) => void;
@@ -67,7 +67,7 @@ export default function PrizeCarousel({ prizes, onClaimClick, showInfo, setShowI
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 px-4 sm:px-8 md:px-12 justify-items-center mb-6">
           {visiblePrizes.map((prize, idx) => (
             <motion.div
-              key={prize.id}
+              key={prize.traitName}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: idx * 0.1, duration: 0.4 }}

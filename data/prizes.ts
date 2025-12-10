@@ -1,72 +1,29 @@
-import { Prize } from "@/types";
+import {
+  getPrizesByTraits,
+  type TraitPrizeMapping,
+} from "./traitPrizeMapping";
 
-// Mock data for testing - replace with actual API call
-export const mockPrizes: Prize[] = [
-  {
-    id: "1",
-    name: " CFUCK 10,000 TOKENS",
-    prizeImage: "/assets/Prize_Icons/CFC token.png",
-    tokens: 10000,
-    isIRL: false,
-    prizeType: "token",
-    traitName: "GOLDEN EYES",
-    traitIcons: ["/assets/Claim_Prize/Trophy.png"],
-  },
-  {
-    id: "2",
-    name: "HAU Shirts",
-    prizeImage: "/assets/Prize_Icons/HauShirt.png",
-    isIRL: true,
-    prizeType: "shirt",
-    traitName: "PURPLE FUR",
-    traitIcons: ["/assets/Prize_Icons/HauShirt.png"],
-  },
-  {
-    id: "3",
-    name: "EMPEROR wine",
-    prizeImage: "/assets/Prize_Icons/EmperorWine.png",
-    isIRL: true,
-    prizeType: "wine",
-    traitName: "DIAMOND CHAIN",
-    traitIcons: ["/assets/Prize_Icons/EmperorWine.png"],
-  },
-  {
-    id: "4",
-    name: "LFGO 10,000 TOKENS",
-    prizeImage: "/assets/Prize_Icons/LFGOtoken.png",
-    tokens: 10000,
-    isIRL: false,
-    prizeType: "token",
-    traitName: "LASER EYES",
-    traitIcons: ["/assets/Claim_Prize/Trophy.png"],
-  },
-  {
-    id: "5",
-    name: "PENGwine wine",
-    prizeImage: "/assets/Claim_Prize/Pengwine.png",
-    isIRL: true,
-    prizeType: "wine",
-    traitName: "COSMIC BACKGROUND",
-    traitIcons: ["/assets/Prize_Icons/Pengwine.png"],
-  },
-  {
-    id: "6",
-    name: "$SOAP 10,000 TOKENS",
-    prizeImage: "/assets/Prize_Icons/$SOAP token.png",
-    tokens: 10000,
-    isIRL: false,
-    prizeType: "token",
-    traitName: "RAINBOW AURA",
-    traitIcons: ["/assets/Claim_Prize/Trophy.png"],
-  },
-  {
-    id: "7",
-    name: "10 Touch Grass Rune",
-    prizeImage: "/assets/Prize_Icons/Touch_Grass Token.png",
-    tokens: 10000,
-    isIRL: true,
-    prizeType: "rune",
-    traitName: "RAINBOW AURA",
-    traitIcons: ["/assets/Claim_Prize/Trophy.png"],
-  },
+// Simulated API response - only contains trait names
+export const mockApiResponse: string[] = [
+  "LFGO Handdrawn Design",
+  "CFC Hand Blue",
+  "CFC Hand Yellow",
+  "CFC Hand Purple",
+  "Wizard Hat",
+  "Shit Happens deco",
+  "Tiger Hoodie",
+  "cluster fk",
+  "WGA skull",
 ];
+
+/**
+ * Convert API trait names to complete prize objects
+ */
+export function transformApiToPrizes(
+  traitNames: string[]
+): TraitPrizeMapping[] {
+  return getPrizesByTraits(traitNames);
+}
+
+// For immediate use in the component
+export const mockPrizes = transformApiToPrizes(mockApiResponse);
