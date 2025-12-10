@@ -7,18 +7,41 @@ import Image from "next/image";
 import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PrizeCarousel from "@/components/PrizeCarousel";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { mockPrizes } from "@/data/prizes";
 
 export default function PrizesPage() {
   const router = useRouter();
   const [showInfo, setShowInfo] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const prizes = mockPrizes; // Replace with actual API data
 
   // Check if user has any IRL prizes
   const hasIRLPrizes = prizes.some((prize) => prize.isIRL);
 
   // Handle claim button click
-  const handleClaim = () => {
+  const handleClaim = async () => {
+    setIsLoading(true);
+    
+    // BACKEND IMPLEMENTATION NOTE:
+    // When the user clicks the claim button and is redirected to the form,
+    // show the loading screen with the message below.
+    // 
+    // TODO: Add API call here to validate/prepare form data
+    // Example:
+    // try {
+    //   const response = await fetch('/api/prepare-form', {
+    //     method: 'POST',
+    //     body: JSON.stringify({ walletAddress, prizeIds: prizes.map(p => p.id) }),
+    //   });
+    //   const data = await response.json();
+    //   // Use data as needed before navigation
+    // } catch (error) {
+    //   console.error("Error preparing form:", error);
+    //   setIsLoading(false);
+    //   return;
+    // }
+
     if (hasIRLPrizes) {
       router.push("/IRL-Form");
     } else {
@@ -96,6 +119,17 @@ export default function PrizesPage() {
 
       <main className="relative flex flex-col items-center justify-start min-h-screen px-4 md:px-8 py-8 md:py-12 z-10">
         
+        {/* SHOW LOADING SPINNER WHEN LOADING */}
+        {isLoading ? (
+          <div className="flex-grow flex flex-col items-center justify-center w-full">
+            <LoadingSpinner 
+              message="Preparing your form..." 
+              showCharacter={true}
+            />
+          </div>
+        ) : (
+          <>
+        
         {/* CHARACTER WITH HALO - Behind title but above background */}
         <motion.div
           initial={{ y: -50, opacity: 0 }}
@@ -148,6 +182,8 @@ export default function PrizesPage() {
 
         {/* INFO TEXT WITH ICON - Now inside carousel */}
         <PrizeCarousel prizes={prizes} onClaimClick={handleClaim} showInfo={showInfo} setShowInfo={setShowInfo} />
+          </>
+        )}
       </main>
     </div>
   );

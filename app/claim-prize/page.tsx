@@ -3,21 +3,48 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import BreathingItem from "@/components/Claim_Breathing_prizes";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import Image from "next/image";
 import { motion } from "framer-motion";
 
 export default function ClaimPrizePage() {
     const router = useRouter();
     const[walletAddress, setWalletAddress] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleConnect = () => {
+    const handleConnect = async () => {
+        setIsLoading(true);
         setWalletAddress("8x...42a");
-        router.push("/claim-prize/prizes"); // [TODO Backend] Navigate to prizes page after connecting 
+        
+        // BACKEND IMPLEMENTATION NOTE:
+        // When wallet is connected, show loading spinner while fetching user's prize data
+        // Replace the simulated timeout below with your actual API call
+        try {
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate 2s API call
+            
+            // TODO: Replace with actual API call to check user's prizes
+            
+            router.push("/claim-prize/prizes"); // Navigate after API call completes
+        } catch (error) {
+            console.error("Error fetching prizes:", error);
+            // TODO: Show error message to user if API fails
+            setIsLoading(false);
+        }
     };
 
     return (
         <div className="relative flex flex-col flex-grow w-full overflow-x-hidden">
 
+            {/* SHOW LOADING SPINNER WHEN LOADING */}
+            {isLoading ? (
+                <main className="flex-grow flex flex-col items-center justify-center relative z-10 w-full mx-auto px-5">
+                    <LoadingSpinner 
+                        message="Checking your wallet..." 
+                        showCharacter={true}
+                    />
+                </main>
+            ) : (
+                <>
             <main className="flex-grow flex flex-col items-center justify-center relative z-10 w-full mx-auto px-5">
                 {/*Trophy Icon at the Top*/}
                 <motion.div
@@ -81,7 +108,8 @@ export default function ClaimPrizePage() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={handleConnect}
-            className="mt-8 bg-[#FF00FC] text-white font-luckiest text-[20px] px-8 py-3 rounded-xl shadow-[0_0_20px_#FF00FC] border-2 border-white/20 transition-all hover:bg-[#D900FF] uppercase tracking-wide"
+            disabled={isLoading}
+            className="mt-8 bg-[#FF00FC] text-white font-luckiest text-[20px] px-8 py-3 rounded-xl shadow-[0_0_20px_#FF00FC] border-2 border-white/20 transition-all hover:bg-[#D900FF] uppercase tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
             >
             {walletAddress ? `Connected: ${walletAddress}` : "Connect Wallet"}
             </motion.button>
@@ -119,6 +147,8 @@ export default function ClaimPrizePage() {
             unoptimized
          />
       </motion.div>
+                </>
+            )}
 
     </div>
   );

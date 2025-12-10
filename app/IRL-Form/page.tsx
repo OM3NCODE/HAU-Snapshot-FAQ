@@ -7,6 +7,7 @@ import { Country, City } from "country-state-city";
 import type { ICountry, ICity } from "country-state-city";
 import * as flags from "country-flag-icons/react/3x2";
 import FormCard from "@/components/FormCard";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { mockPrizes } from "@/data/prizes";
 import { steps, FieldConfig, StepId } from "./formConfig";
 
@@ -27,7 +28,7 @@ const heroSubtitle =
 
 function getPrizeFromParams(prizeId?: string) {
 	if (!prizeId) return mockPrizes[0];
-	return mockPrizes.find((p) => p.id === prizeId) ?? mockPrizes[0];
+	return mockPrizes.find((p) => p.traitName === prizeId) ?? mockPrizes[0];
 }
 
 function getPrizesFromParams(prizeIds?: string) {
@@ -37,7 +38,7 @@ function getPrizesFromParams(prizeIds?: string) {
 	}
 	const ids = prizeIds.split(",").map(id => id.trim());
 	const prizes = ids
-		.map(id => mockPrizes.find((p) => p.id === id))
+		.map(id => mockPrizes.find((p) => p.traitName === id))
 		.filter((p): p is typeof mockPrizes[0] => p !== undefined);
 	return prizes.length > 0 ? prizes : mockPrizes;
 }
@@ -65,6 +66,7 @@ export default function IRLFormPage() {
 	const [citySearch, setCitySearch] = useState("");
 	const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
 	const [fieldErrors, setFieldErrors] = useState<Set<string>>(new Set());
+	const [isLoading, setIsLoading] = useState(false);
 
 	const countryOptions = useMemo<ICountry[]>(() => Country.getAllCountries(), []);
 	
@@ -126,6 +128,13 @@ export default function IRLFormPage() {
 
 	const handleChange = (name: string, value: string | boolean) => {
 		setForm((prev) => ({ ...prev, [name]: value }));
+		
+		// Clear city when country changes
+		if (name === "country") {
+			setForm((prev) => ({ ...prev, city: "" }));
+			setCitySearch("");
+		}
+		
 		// Validate field and update error state
 		const field = visibleFields.find(f => f.name === name);
 		if (field && field.required) {
@@ -161,6 +170,37 @@ export default function IRLFormPage() {
 
 	const handleNext = () => {
 		if (!isStepValid) return;
+		
+		// BACKEND IMPLEMENTATION NOTE:
+		// When the user clicks "Next" on the final confirmation step (stepIndex 3),
+		// show a loading screen while submitting the form data.
+		// 
+		// TODO: Add API call to submit form data
+		// Example:
+		// if (stepIndex === STEP_SEQUENCE.length - 1) {
+		//   setIsLoading(true);
+		//   try {
+		//     const response = await fetch('/api/submit-form', {
+		//       method: 'POST',
+		//       headers: { 'Content-Type': 'application/json' },
+		//       body: JSON.stringify({ 
+		//         walletAddress, 
+		//         formData: form,
+		//         prizes: prizes.map(p => p.trait)
+		//       }),
+		//     });
+		//     if (!response.ok) throw new Error('Form submission failed');
+		//     const data = await response.json();
+		//     // Handle success response
+		//     setIsLoading(false);
+		//     router.push("/IRL-Form/submission_success");
+		//   } catch (error) {
+		//     console.error("Error submitting form:", error);
+		//     setIsLoading(false);
+		//   }
+		//   return;
+		// }
+		
 		if (stepIndex === STEP_SEQUENCE.length - 1) {
 			// Final confirmation step, redirect to success page
 			router.push("/IRL-Form/submission_success");
@@ -192,9 +232,19 @@ export default function IRLFormPage() {
 				/>
 			</div>
 
-			{/* Main content area */}
-			<div className="relative z-10 min-h-screen flex flex-col px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
-				{/* Hero text section - centered */}
+		{/* Main content area */}
+		<div className="relative z-10 min-h-screen flex flex-col px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
+			{/* SHOW LOADING SPINNER WHEN LOADING */}
+			{isLoading ? (
+				<div className="flex-grow flex flex-col items-center justify-center w-full">
+					<LoadingSpinner 
+						message="Submitting your form..." 
+						showCharacter={true}
+					/>
+				</div>
+			) : (
+				<>
+			{/* Hero text section - centered */}
 				<div className="mb-8 sm:mb-12 w-full flex flex-col items-center text-center">
 					<h1
 						className="font-sugar text-[32px] sm:text-[44px] md:text-[56px] lg:text-[70px] xl:text-[80px] leading-[0.95] text-[#FFC700] drop-shadow-[0_4px_0_#8B3B00] max-w-5xl mb-[30px]"
@@ -236,69 +286,122 @@ export default function IRLFormPage() {
 								}
 							>
 								<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-									{visibleFields.map((field, idx) => {
-										// Check if this is a grouped field (like phone with code)
-										const isGrouped = field.rowGroup;
-										const nextField = visibleFields[idx + 1];
-										const isGroupStart = isGrouped && (!visibleFields[idx - 1] || visibleFields[idx - 1].rowGroup !== field.rowGroup);
-
-										// Skip rendering if this is not the start of a group
-										if (isGrouped && !isGroupStart) return null;
-
-										// If this is the start of a grouped row, render both fields side by side
-										if (isGroupStart && nextField?.rowGroup === field.rowGroup) {
-											return (
-												<div key={`group-${field.name}`} className="col-span-full flex flex-col">
-													{/* Single Phone label */}
-													<label className="text-white font-luckiest text-xs uppercase tracking-wider mb-2 block">
-														{nextField.label}
-													</label>
-													{/* Fields in row: code (small) and phone (large) */}
-													<div className="flex gap-3">
-														<FieldInput
-															field={field}
-															value={form[field.name] ?? ""}
-															onChange={handleChange}
-															countryOptions={countryOptions}
-															phoneCodeOptions={phoneCodeOptions}
-															phoneCodeToCountryMap={phoneCodeToCountryMap}
-															cities={citiesForCountry}
-															hideLabel={true}
-															className="w-24 sm:w-28"
-															hasError={fieldErrors.has(field.name)}
-														/>
-														<FieldInput
-															field={nextField}
-															value={form[nextField.name] ?? ""}
-															onChange={handleChange}
-															countryOptions={countryOptions}
-															phoneCodeOptions={phoneCodeOptions}
-															phoneCodeToCountryMap={phoneCodeToCountryMap}
-															cities={citiesForCountry}
-															hideLabel={true}
-															className="flex-1"
-															hasError={fieldErrors.has(nextField.name)}
-														/>
-													</div>
+									{/* Custom layout for shipping step: country left, city right */}
+									{currentStepId === "shipping" ? (
+										<>
+											{/* Country on the left */}
+											{visibleFields.find(f => f.name === "country") && (
+												<div className="col-span-1">
+													<FieldInput
+														key="country"
+														field={visibleFields.find(f => f.name === "country")!}
+														value={form["country"] ?? ""}
+														onChange={handleChange}
+														countryOptions={countryOptions}
+														phoneCodeOptions={phoneCodeOptions}
+														phoneCodeToCountryMap={phoneCodeToCountryMap}
+														cities={citiesForCountry}
+														hasError={fieldErrors.has("country")}
+													/>
 												</div>
-											);
-										}
+											)}
+											{/* City on the right */}
+											{visibleFields.find(f => f.name === "city") && (
+												<div className="col-span-1">
+													<FieldInput
+														key="city"
+														field={visibleFields.find(f => f.name === "city")!}
+														value={form["city"] ?? ""}
+														onChange={handleChange}
+														countryOptions={countryOptions}
+														phoneCodeOptions={phoneCodeOptions}
+														phoneCodeToCountryMap={phoneCodeToCountryMap}
+														cities={citiesForCountry}
+														hasError={fieldErrors.has("city")}
+													/>
+												</div>
+											)}
+											{/* Other fields full width */}
+											{visibleFields.filter(f => f.name !== "country" && f.name !== "city").map((field) => (
+												<FieldInput
+													key={field.name}
+													field={field}
+													value={form[field.name] ?? ""}
+													onChange={handleChange}
+													countryOptions={countryOptions}
+													phoneCodeOptions={phoneCodeOptions}
+													phoneCodeToCountryMap={phoneCodeToCountryMap}
+													cities={citiesForCountry}
+													hasError={fieldErrors.has(field.name)}
+												/>
+											))}
+										</>
+									) : (
+										// Default rendering for other steps
+										visibleFields.map((field, idx) => {
+											// Check if this is a grouped field (like phone with code)
+											const isGrouped = field.rowGroup;
+											const nextField = visibleFields[idx + 1];
+											const isGroupStart = isGrouped && (!visibleFields[idx - 1] || visibleFields[idx - 1].rowGroup !== field.rowGroup);
 
-										// Regular field
-										return (
-											<FieldInput
-												key={field.name}
-												field={field}
-												value={form[field.name] ?? ""}
-												onChange={handleChange}
-												countryOptions={countryOptions}
-												phoneCodeOptions={phoneCodeOptions}
-												phoneCodeToCountryMap={phoneCodeToCountryMap}
-												cities={citiesForCountry}
-												hasError={fieldErrors.has(field.name)}
-											/>
-										);
-									})}
+											// Skip rendering if this is not the start of a group
+											if (isGrouped && !isGroupStart) return null;
+
+											// If this is the start of a grouped row, render both fields side by side
+											if (isGroupStart && nextField?.rowGroup === field.rowGroup) {
+												return (
+													<div key={`group-${field.name}`} className="col-span-full flex flex-col">
+														{/* Single Phone label */}
+														<label className="text-white font-luckiest text-xs uppercase tracking-wider mb-2 block">
+															{nextField.label}
+														</label>
+														{/* Fields in row: code (small) and phone (large) */}
+														<div className="flex gap-3">
+															<FieldInput
+																field={field}
+																value={form[field.name] ?? ""}
+																onChange={handleChange}
+																countryOptions={countryOptions}
+																phoneCodeOptions={phoneCodeOptions}
+																phoneCodeToCountryMap={phoneCodeToCountryMap}
+																cities={citiesForCountry}
+																hideLabel={true}
+																className="w-24 sm:w-28"
+																hasError={fieldErrors.has(field.name)}
+															/>
+															<FieldInput
+																field={nextField}
+																value={form[nextField.name] ?? ""}
+																onChange={handleChange}
+																countryOptions={countryOptions}
+																phoneCodeOptions={phoneCodeOptions}
+																phoneCodeToCountryMap={phoneCodeToCountryMap}
+																cities={citiesForCountry}
+																hideLabel={true}
+																className="flex-1"
+																hasError={fieldErrors.has(nextField.name)}
+															/>
+														</div>
+													</div>
+												);
+											}
+
+											// Regular field
+											return (
+												<FieldInput
+													key={field.name}
+													field={field}
+													value={form[field.name] ?? ""}
+													onChange={handleChange}
+													countryOptions={countryOptions}
+													phoneCodeOptions={phoneCodeOptions}
+													phoneCodeToCountryMap={phoneCodeToCountryMap}
+													cities={citiesForCountry}
+													hasError={fieldErrors.has(field.name)}
+												/>
+											);
+										})
+									)}
 								</div>
 							</FormCard>
 
@@ -324,8 +427,10 @@ export default function IRLFormPage() {
 						</>
 					) : null}
 				</div>
-			</div>
+				</>
+			)}
 		</div>
+	</div>
 	);
 }
 
@@ -440,40 +545,48 @@ function FieldInput({ field, value, onChange, countryOptions, phoneCodeOptions, 
 
 	if (field.type === "country") {
 		const selectedCountry = countryOptions.find((c) => c.isoCode === value);
+		const getFlagComponent = (isoCode: string) => {
+			const FlagComponent = (flags as any)[isoCode];
+			return FlagComponent ? <FlagComponent className="w-5 h-3.5 object-cover rounded-sm" /> : null;
+		};
+		
 		const filteredCountries = filterOptions(countryOptions, countrySearch, (c) => c.name);
+		const isOpen = countrySearch.length > 0;
+		
 		return (
 			<div className="flex flex-col relative">
 				{baseLabel}
 				<input
 					type="text"
 					className={inputClasses}
-					placeholder="Select country"
-					value={countrySearch || selectedCountry?.name || ""}
-					onChange={(e) => {
-						setCountrySearch(e.target.value);
+					placeholder="Search country..."
+					value={countrySearch || (value ? selectedCountry?.name || "" : "")}
+					onChange={(e) => setCountrySearch(e.target.value)}
+					onFocus={() => {
+						setCountrySearch("");
 					}}
-					onFocus={() => setCountrySearch("")} 
-					onBlur={() => {
-						setTimeout(() => setCountrySearch(""), 200);
-					}}
+					onBlur={() => setTimeout(() => setCountrySearch(""), 150)}
+					autoComplete="off"
 				/>
-				{countrySearch && (
-					<div className="absolute top-full left-0 right-0 mt-1 bg-[#dba4e2] border-[3px] border-[#730071] rounded-md max-h-60 overflow-y-auto z-50 shadow-lg">
+				{isOpen && (
+					<div className="absolute top-full left-0 right-0 mt-1 bg-white border-[2px] border-[#730071] rounded-lg max-h-72 overflow-y-auto z-50 shadow-lg">
 						{filteredCountries.length > 0 ? (
 							filteredCountries.map((c: ICountry) => (
 								<div
 									key={c.isoCode}
-									className="px-3 py-2 cursor-pointer hover:bg-[#c88ed1] text-black font-montserrat text-sm"
-									onMouseDown={() => {
+									className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-black font-montserrat text-sm flex items-center gap-3 border-b border-gray-200 last:border-b-0"
+									onMouseDown={(e) => {
+										e.preventDefault();
 										onChange(field.name, c.isoCode);
 										setCountrySearch("");
 									}}
 								>
-									{c.name}
+									{getFlagComponent(c.isoCode)}
+									<span>{c.name}</span>
 								</div>
 							))
 						) : (
-							<div className="px-3 py-2 text-black/60 font-montserrat text-sm">No matches</div>
+							<div className="px-4 py-3 text-gray-500 font-montserrat text-sm">No matches</div>
 						)}
 					</div>
 				)}
@@ -484,31 +597,33 @@ function FieldInput({ field, value, onChange, countryOptions, phoneCodeOptions, 
 
 	if (field.type === "city") {
 		const filteredCities = filterOptions(cities, citySearch, (c) => c.name);
+		const isOpen = citySearch.length > 0;
+		
 		return (
 			<div className="flex flex-col relative">
 				{baseLabel}
 				<input
 					type="text"
 					className={inputClasses}
-					placeholder={cities.length > 0 ? "Select city" : "Select country first"}
+					placeholder={cities.length > 0 ? "Search city..." : "Select country first"}
 					value={citySearch || (value as string)}
-					onChange={(e) => {
-						setCitySearch(e.target.value);
+					onChange={(e) => setCitySearch(e.target.value)}
+					onFocus={() => {
+						setCitySearch("");
 					}}
-					onFocus={() => setCitySearch("")} 
-					onBlur={() => {
-						setTimeout(() => setCitySearch(""), 200);
-					}}
+					onBlur={() => setTimeout(() => setCitySearch(""), 150)}
 					disabled={!cities.length}
+					autoComplete="off"
 				/>
-				{citySearch && cities.length > 0 && (
-					<div className="absolute top-full left-0 right-0 mt-1 bg-[#dba4e2] border-[3px] border-[#730071] rounded-md max-h-60 overflow-y-auto z-50 shadow-lg">
+				{isOpen && cities.length > 0 && (
+					<div className="absolute top-full left-0 right-0 mt-1 bg-white border-[2px] border-[#730071] rounded-lg max-h-72 overflow-y-auto z-50 shadow-lg">
 						{filteredCities.length > 0 ? (
 							filteredCities.map((c: ICity, idx: number) => (
 								<div
 									key={`${c.name}-${idx}`}
-									className="px-3 py-2 cursor-pointer hover:bg-[#c88ed1] text-black font-montserrat text-sm"
-									onMouseDown={() => {
+									className="px-4 py-3 cursor-pointer hover:bg-gray-100 text-black font-montserrat text-sm border-b border-gray-200 last:border-b-0"
+									onMouseDown={(e) => {
+										e.preventDefault();
 										onChange(field.name, c.name);
 										setCitySearch("");
 									}}
@@ -517,7 +632,7 @@ function FieldInput({ field, value, onChange, countryOptions, phoneCodeOptions, 
 								</div>
 							))
 						) : (
-							<div className="px-3 py-2 text-black/60 font-montserrat text-sm">No matches</div>
+							<div className="px-4 py-3 text-gray-500 font-montserrat text-sm">No matches</div>
 						)}
 					</div>
 				)}

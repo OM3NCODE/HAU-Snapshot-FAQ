@@ -51,8 +51,8 @@ export const steps: StepConfig[] = [
     fields: [
       { name: "address1", label: "Address Line 1", type: "text", required: true },
       { name: "address2", label: "Address Line 2", type: "text", required: false },
-      { name: "city", label: "City", type: "city", required: true },
       { name: "country", label: "Country", type: "country", required: true },
+      { name: "city", label: "City", type: "city", required: true },
       { name: "postalCode", label: "Postal Code", type: "text", required: true },
     ],
   },
