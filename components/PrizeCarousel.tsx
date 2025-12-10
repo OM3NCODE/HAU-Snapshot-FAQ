@@ -12,20 +12,24 @@ interface PrizeCarouselProps {
 }
 
 export default function PrizeCarousel({ prizes, onClaimClick, showInfo, setShowInfo }: PrizeCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const itemsPerPage = 6;
+  const [pageIndex, setPageIndex] = useState(0);
 
-  // Carousel navigation
   const nextSlide = () => {
-    if (currentIndex < prizes.length - 6) {
-      setCurrentIndex(currentIndex + 1);
+    const nextStart = (pageIndex + 1) * itemsPerPage;
+    if (nextStart < prizes.length) {
+      setPageIndex(pageIndex + 1);
     }
   };
 
   const prevSlide = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1);
+    if (pageIndex > 0) {
+      setPageIndex(pageIndex - 1);
     }
   };
+
+  const start = pageIndex * itemsPerPage;
+  const visiblePrizes = prizes.slice(start, start + itemsPerPage);
 
   return (
     <motion.div
@@ -45,7 +49,7 @@ export default function PrizeCarousel({ prizes, onClaimClick, showInfo, setShowI
         {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
-          disabled={currentIndex === 0}
+          disabled={pageIndex === 0}
           className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed rounded-full p-2 md:p-3 transition-all" // Semi-transparent white
         >
           <ChevronLeft className="w-6 h-6 md:w-8 md:h-8 text-white" />{" "}
@@ -53,7 +57,7 @@ export default function PrizeCarousel({ prizes, onClaimClick, showInfo, setShowI
         </button>
         <button
           onClick={nextSlide}
-          disabled={currentIndex >= prizes.length - 6}
+          disabled={(pageIndex + 1) * itemsPerPage >= prizes.length}
           className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 z-30 bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:cursor-not-allowed rounded-full p-2 md:p-3 transition-all" // Semi-transparent white
         >
           <ChevronRight className="w-6 h-6 md:w-8 md:h-8 text-white" />{" "}
@@ -61,7 +65,7 @@ export default function PrizeCarousel({ prizes, onClaimClick, showInfo, setShowI
         </button>
         {/* Cards Grid - 2 rows of 3 cards (Figma card size: 301x187) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 px-4 sm:px-8 md:px-12 justify-items-center mb-6">
-          {prizes.slice(currentIndex, currentIndex + 6).map((prize, idx) => (
+          {visiblePrizes.map((prize, idx) => (
             <motion.div
               key={prize.id}
               initial={{ opacity: 0, scale: 0.8 }}

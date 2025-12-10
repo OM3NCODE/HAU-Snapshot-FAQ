@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Country, City } from "country-state-city";
 import type { ICountry, ICity } from "country-state-city";
 import * as flags from "country-flag-icons/react/3x2";
@@ -49,6 +49,7 @@ function isFieldVisible(field: FieldConfig, prizeIsIRL: boolean, prize: any) {
 
 export default function IRLFormPage() {
 	const searchParams = useSearchParams();
+	const router = useRouter();
 	const prizeIds = searchParams.get("prizeId") ?? undefined;
 	const prizes = getPrizesFromParams(prizeIds);
 	const prize = prizes[0]; // Primary prize for display
@@ -160,7 +161,12 @@ export default function IRLFormPage() {
 
 	const handleNext = () => {
 		if (!isStepValid) return;
-		setStepIndex((idx) => Math.min(idx + 1, STEP_SEQUENCE.length - 1));
+		if (stepIndex === STEP_SEQUENCE.length - 1) {
+			// Final confirmation step, redirect to success page
+			router.push("/IRL-Form/submission_success");
+		} else {
+			setStepIndex((idx) => Math.min(idx + 1, STEP_SEQUENCE.length - 1));
+		}
 	};
 
 	const handleBack = () => {
