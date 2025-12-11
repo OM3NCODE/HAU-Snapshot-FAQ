@@ -49,12 +49,12 @@ export default function Navbar() {
             - Absolute centering ensures it ignores Logo width
         */}
         <div className="hidden lg:flex absolute left-1/2 -translate-x-1/2 items-center gap-[40px] font-montserrat font-bold text-lg text-white h-[25px]">
-          <Link href="/" className={inactiveStyle}>Home</Link>
+          <Link href="/" className={isActive("/") ? activeStyle : inactiveStyle}>Home</Link>
           <Link href="/claim-prize" className={isActive("/claim-prize") ? activeStyle : inactiveStyle}>Claim Prize</Link>
-          <Link href="/" className={isActive("/") ? activeStyle : inactiveStyle}>FAQ&apos;s</Link>
+          <Link href="/FAQ" className={isActive("/FAQ") ? activeStyle : inactiveStyle}>FAQ&apos;s</Link>
         </div>
 
-        {/* --- RIGHT SECTION (Twitter + Mobile Toggle) --- */}
+        {/* --- RIGHT SECTION (Twitter + Discord + Mobile Toggle) --- */}
         <div className="flex items-center gap-4 z-50">
             
             {/* Twitter Link (Visible on Mobile & Desktop) */}
@@ -67,6 +67,23 @@ export default function Navbar() {
               <Image 
                   src="/assets/X.png" 
                   alt="Twitter" 
+                  width={70} 
+                  height={70} 
+                  className="w-full h-full object-contain"
+                  unoptimized 
+              />
+            </a>
+
+            {/* Discord Link (Visible on Mobile & Desktop) */}
+            <a 
+              href="https://discord.gg/TDVMeFr4kK" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block w-[40px] h-[40px] lg:w-[70px] lg:h-[70px] hover:opacity-80 transition-opacity"
+            >
+              <Image 
+                  src="/assets/Discord.png" 
+                  alt="Discord" 
                   width={70} 
                   height={70} 
                   className="w-full h-full object-contain"

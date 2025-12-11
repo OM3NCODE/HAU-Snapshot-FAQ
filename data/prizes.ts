@@ -14,7 +14,8 @@ export const mockApiResponse: string[] = [
   "Tiger Hoodie",
   "cluster fk",
   "WGA skull",
-  "Future BASC Helmet"
+  "Future BASC Helmet",
+  "Touch Grass Hoodie"
 ];
 
 /**
