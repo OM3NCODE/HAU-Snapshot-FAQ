@@ -8,12 +8,12 @@ import type { ICountry, ICity } from "country-state-city";
 import * as flags from "country-flag-icons/react/3x2";
 import FormCard from "@/components/FormCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { mockPrizes } from "@/data/prizes";
+import { fetchPrizesFromAPI, transformApiToClaimablePrizes, type TraitPrizeMapping } from "@/data/prizes";
 import { steps, FieldConfig, StepId } from "./formConfig";
 
 type FormState = Record<string, string | boolean>;
 
-const STEP_SEQUENCE: StepId[] = ["basic", "shipping", "prize", "confirm"];
+const STEP_SEQUENCE: StepId[] = ["basic", "shipping", "prizeSelection", "prize", "confirm"];
 
 // Helper to filter options based on search
 function filterOptions<T>(items: T[], searchTerm: string, getLabel: (item: T) => string): T[] {
@@ -26,23 +26,6 @@ const heroTitle = "Just one more step to unlock your prize";
 const heroSubtitle =
 	"Fill in your details so we can deliver your goodies — make sure everything's accurate, this is the address your loot will ship to!";
 
-function getPrizeFromParams(prizeId?: string) {
-	if (!prizeId) return mockPrizes[0];
-	return mockPrizes.find((p) => p.traitName === prizeId) ?? mockPrizes[0];
-}
-
-function getPrizesFromParams(prizeIds?: string) {
-	if (!prizeIds) {
-		// Default: load ALL prizes (for testing all field types)
-		return mockPrizes;
-	}
-	const ids = prizeIds.split(",").map(id => id.trim());
-	const prizes = ids
-		.map(id => mockPrizes.find((p) => p.traitName === id))
-		.filter((p): p is typeof mockPrizes[0] => p !== undefined);
-	return prizes.length > 0 ? prizes : mockPrizes;
-}
-
 function isFieldVisible(field: FieldConfig, prizeIsIRL: boolean, prize: any) {
 	if (!field.show) return true;
 	return field.show(prize ?? { isIRL: prizeIsIRL });
@@ -51,17 +34,43 @@ function isFieldVisible(field: FieldConfig, prizeIsIRL: boolean, prize: any) {
 export default function IRLFormPage() {
 	const searchParams = useSearchParams();
 	const router = useRouter();
-	const prizeIds = searchParams.get("prizeId") ?? undefined;
-	const prizes = getPrizesFromParams(prizeIds);
-	const prize = prizes[0]; // Primary prize for display
+	const sessionToken = searchParams.get("token") ?? undefined;
 	
-	// Collect all prize types from all prizes
-	const allPrizeTypes = new Set<string>(prizes.map(p => p.prizeType));
-	const hasPrizeType = (type: string) => allPrizeTypes.has(type);
-	const hasAnyPrizeType = (types: string[]) => types.some(t => allPrizeTypes.has(t));
-
+	// State for prizes fetched from API
+	const [prizes, setPrizes] = useState<TraitPrizeMapping[]>([]);
+	const [loadingPrizes, setLoadingPrizes] = useState(true);
+	const [prizesError, setPrizesError] = useState<string | null>(null);
+	
 	const [stepIndex, setStepIndex] = useState(0);
 	const [form, setForm] = useState<FormState>({});
+	const [selectedPrizes, setSelectedPrizes] = useState<Set<string>>(new Set());
+	
+	// Fetch prizes from API on mount
+	useEffect(() => {
+		async function loadPrizes() {
+			try {
+				setLoadingPrizes(true);
+				const apiResponse = await fetchPrizesFromAPI(sessionToken);
+				const fetchedPrizes = transformApiToClaimablePrizes(apiResponse);
+				setPrizes(fetchedPrizes);
+				setPrizesError(null);
+			} catch (error) {
+				console.error("Failed to fetch prizes:", error);
+				setPrizesError("Failed to load your prizes. Please try again.");
+			} finally {
+				setLoadingPrizes(false);
+			}
+		}
+		loadPrizes();
+	}, [sessionToken]);
+	
+	const prize = prizes[0] || null; // Primary prize for display
+	
+	// Collect all prize types from selected prizes only
+	const selectedPrizeObjects = prizes.filter(p => selectedPrizes.has(p.traitName));
+	const allPrizeTypes = new Set<string>(selectedPrizeObjects.map(p => p.prizeType));
+	const hasPrizeType = (type: string) => allPrizeTypes.has(type);
+	const hasAnyPrizeType = (types: string[]) => types.some(t => allPrizeTypes.has(t));
 	const [countrySearch, setCountrySearch] = useState("");
 	const [citySearch, setCitySearch] = useState("");
 	const [phoneCodeSearch, setPhoneCodeSearch] = useState("");
@@ -106,25 +115,33 @@ export default function IRLFormPage() {
 		hasPrizeType,
 		hasAnyPrizeType,
 	};
-	const visibleFields = currentFields.filter((f) => isFieldVisible(f, prize.isIRL, combinedPrize));
+	const visibleFields = currentFields.filter((f) => isFieldVisible(f, prize?.isIRL ?? false, combinedPrize));
 
-	const isStepValid = visibleFields.every((field) => {
-		if (!field.required) return true;
-		const value = form[field.name];
-		if (field.type === "checkbox") return Boolean(value);
-		
-		// Basic required check
-		if (!value || String(value).trim().length === 0) return false;
-		
-		// BTC Taproot address validation
-		if (field.name === "btcTaproot") {
-			const address = String(value).trim();
-			// Must start with bc1p and be max 64 characters
-			return address.toLowerCase().startsWith("bc1p") && address.length <= 64;
+	const isStepValid = (() => {
+		// Prize selection step requires at least one prize selected
+		if (currentStepId === "prizeSelection") {
+			return selectedPrizes.size > 0;
 		}
 		
-		return true;
-	});
+		// Other steps validate fields as before
+		return visibleFields.every((field) => {
+			if (!field.required) return true;
+			const value = form[field.name];
+			if (field.type === "checkbox") return Boolean(value);
+			
+			// Basic required check
+			if (!value || String(value).trim().length === 0) return false;
+			
+			// BTC Taproot address validation
+			if (field.name === "btcTaproot") {
+				const address = String(value).trim();
+				// Must start with bc1p and be max 64 characters
+				return address.toLowerCase().startsWith("bc1p") && address.length <= 64;
+			}
+			
+			return true;
+		});
+	})();
 
 	const handleChange = (name: string, value: string | boolean) => {
 		setForm((prev) => ({ ...prev, [name]: value }));
@@ -220,8 +237,8 @@ export default function IRLFormPage() {
 
 	return (
 		<div className="relative min-h-screen w-full overflow-hidden bg-hau-gradient">
-			{/* Character on bottom right - fixed position, partially hidden at corner */}
-			<div className="hidden lg:block fixed bottom-[-80px] right-[-80px] w-[700px] h-[700px] z-0 pointer-events-none" style={{ transform: "rotate(-4deg)" }}>
+			{/* Character on bottom right - fixed position, slightly smaller */}
+			<div className="hidden lg:block fixed bottom-[-40px] right-[-40px] w-[520px] h-[520px] z-0 pointer-events-none" style={{ transform: "rotate(-4deg)" }}>
 				<Image
 					src="/assets/Form/Form Page Hauwee.png"
 					alt="HAU Character"
@@ -234,8 +251,32 @@ export default function IRLFormPage() {
 
 		{/* Main content area */}
 		<div className="relative z-10 min-h-screen flex flex-col px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full">
-			{/* SHOW LOADING SPINNER WHEN LOADING */}
-			{isLoading ? (
+			{/* SHOW LOADING SPINNER WHEN LOADING PRIZES */}
+			{loadingPrizes ? (
+				<div className="flex-grow flex flex-col items-center justify-center w-full">
+					<LoadingSpinner 
+						message="Loading your prizes..." 
+						showCharacter={true}
+					/>
+				</div>
+			) : prizesError || prizes.length === 0 ? (
+				<div className="flex-grow flex flex-col items-center justify-center w-full">
+					<div className="text-center">
+						<h1 className="font-sugar text-[40px] text-[#FFC700] drop-shadow-[0_4px_0_#8B3B00] mb-4">
+							{prizesError ? "ERROR" : "NO PRIZES FOUND"}
+						</h1>
+						<p className="font-luckiest text-white text-sm uppercase mb-6">
+							{prizesError || "No claimable prizes found. Please check your account."}
+						</p>
+						<button
+							onClick={() => router.push("/claim-prize")}
+							className="px-8 py-3 rounded-xl bg-black text-white font-sugar text-lg shadow-[0_6px_0_rgba(0,0,0,0.45)]"
+						>
+							Go Back
+						</button>
+					</div>
+				</div>
+			) : isLoading ? (
 				<div className="flex-grow flex flex-col items-center justify-center w-full">
 					<LoadingSpinner 
 						message="Submitting your form..." 
@@ -247,7 +288,7 @@ export default function IRLFormPage() {
 			{/* Hero text section - centered */}
 				<div className="mb-8 sm:mb-12 w-full flex flex-col items-center text-center">
 					<h1
-						className="font-sugar text-[32px] sm:text-[44px] md:text-[56px] lg:text-[70px] xl:text-[80px] leading-[0.95] text-[#FFC700] drop-shadow-[0_4px_0_#8B3B00] max-w-5xl mb-[30px]"
+						className="font-sugar text-[32px] sm:text-[44px] md:text-[56px] lg:text-[64px] xl:text-[64px] leading-[0.95] text-[#FFC700] drop-shadow-[0_4px_0_#8B3B00] max-w-5xl mb-[30px]"
 						style={{ textShadow: "6px 6px 0 #8B3B00" }}
 					>
 						{heroTitle.toUpperCase()}
@@ -285,9 +326,51 @@ export default function IRLFormPage() {
 									</div>
 								}
 							>
-								<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+								{/* Prize Selection Step - Custom checkbox UI */}
+								{currentStepId === "prizeSelection" ? (
+									<div className="col-span-full flex flex-col gap-4">
+										{prizes.map((p) => (
+											<label
+												key={p.traitName}
+												className={`flex items-start gap-4 p-4 rounded-lg border-[3px] cursor-pointer transition-all ${
+													selectedPrizes.has(p.traitName)
+														? "border-[#00FFFF] bg-[#00FFFF]/10"
+														: "border-[#730071] bg-white/5"
+												}`}
+											>
+												<input
+													type="checkbox"
+													checked={selectedPrizes.has(p.traitName)}
+													onChange={(e) => {
+														const newSelected = new Set(selectedPrizes);
+														if (e.target.checked) {
+															newSelected.add(p.traitName);
+														} else {
+															newSelected.delete(p.traitName);
+														}
+														setSelectedPrizes(newSelected);
+													}}
+													className="mt-1 h-5 w-5 accent-[#00FFFF]"
+												/>
+												<div className="flex-1">
+													<div className="font-luckiest text-white text-base uppercase mb-1">
+														{p.prizeName}
+													</div>
+													<div className="font-montserrat text-white/80 text-sm">
+														{p.prizeType === "rune" && "Rune Prize - Requires BTC Taproot Address"}
+														{p.prizeType === "shirt" && "Shirt Prize - Requires Size Selection"}
+														{p.prizeType === "wine" && "Wine Prize - Requires Age Verification"}
+														{p.prizeType === "cap" && "Cap Prize - Requires Size Selection"}
+														{p.prizeType === "visor" && "Visor Prize - Requires Size Selection"}
+													</div>
+												</div>
+											</label>
+										))}
+									</div>
+								) : (
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 									{/* Custom layout for shipping step: country left, city right */}
-									{currentStepId === "shipping" ? (
+								{currentStepId === "shipping" ? (
 										<>
 											{/* Country on the left */}
 											{visibleFields.find(f => f.name === "country") && (
@@ -402,13 +485,14 @@ export default function IRLFormPage() {
 											);
 										})
 									)}
-								</div>
+									</div>
+								)}
 							</FormCard>
 
 							{/* Progress bar below card */}
 							<div className="mt-6 w-full">
 								<div className="flex gap-2">
-									{Array.from({ length: 4 }).map((_, idx) => (
+									{Array.from({ length: 5 }).map((_, idx) => (
 										<div
 											key={idx}
 											className="h-1.5 flex-1 rounded-full transition-all"

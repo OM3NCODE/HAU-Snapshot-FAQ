@@ -33,14 +33,14 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
             }}
           >
             {/* "PRIZE" text at top */}
-            <h3 className="font-sugar text-[#FFB800] text-xl md:text-2xl mb-2 tracking-wider">
+            <h3 className="font-sugar text-[#FFB800] text-2xl md:text-3xl mb-2 tracking-wider">
               {" "}
               {/* Golden yellow text */}
               PRIZE
             </h3>
 
             {/* Prize Image */}
-            <div className="relative w-20 h-20 md:w-24 md:h-24 mb-2">
+            <div className="relative w-24 h-24 md:w-32 md:h-32 mb-2">
               <Image
                 src={prize.prizeImage}
                 alt={prize.prizeName}
@@ -51,7 +51,7 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
             </div>
 
             {/* Prize Name */}
-            <p className="font-luckiest text-[#FFB800] text-sm md:text-base text-center uppercase tracking-wide">
+            <p className="font-luckiest text-[#FFB800] text-base md:text-lg text-center uppercase tracking-wide">
               {" "}
               {/* Golden yellow text */}
               {prize.prizeName}
@@ -71,14 +71,14 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
             }}
           >
             {/* "TRAIT" text at top */}
-            <h3 className="font-sugar text-[#1A1A1A] text-xl md:text-2xl mb-2 tracking-wider">
+            <h3 className="font-sugar text-[#1A1A1A] text-2xl md:text-3xl mb-2 tracking-wider">
               {" "}
               {/* Dark text */}
               TRAIT
             </h3>
 
             {/* Trait Icon */}
-            <div className="relative w-10 h-10 md:w-12 md:h-12 mb-2">
+            <div className="relative w-14 h-14 md:w-16 md:h-16 mb-2">
               <Image
                 src={prize.traitIcon}
                 alt={prize.traitName}
@@ -89,7 +89,7 @@ export default function PrizeCard({ prize }: PrizeCardProps) {
             </div>
 
             {/* Trait Name */}
-            <p className="font-luckiest text-[#1A1A1A] text-sm md:text-base text-center uppercase tracking-wide">
+            <p className="font-luckiest text-[#1A1A1A] text-base md:text-lg text-center uppercase tracking-wide">
               {" "}
               {/* Dark text */}
               {prize.traitName}

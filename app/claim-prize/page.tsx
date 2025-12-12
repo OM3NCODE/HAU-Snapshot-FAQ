@@ -143,7 +143,7 @@ export default function ClaimPrizePage() {
             alt="Character"
             width={400} 
             height={400}
-            className="w-[90px] sm:w-[120px] md:w-[180px] lg:w-[260px] xl:w-[350px] 2xl:w-[480px] min-[1800px]:w-[420px] h-auto object-contain object-bottom transition-all duration-500 ease-in-out" 
+                className="w-[72px] sm:w-[100px] md:w-[150px] lg:w-[220px] xl:w-[280px] 2xl:w-[360px] min-[1800px]:w-[340px] h-auto object-contain object-bottom transition-all duration-500 ease-in-out" 
             unoptimized
          />
       </motion.div>

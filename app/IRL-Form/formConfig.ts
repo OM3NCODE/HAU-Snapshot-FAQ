@@ -1,6 +1,6 @@
 import { Prize } from "@/types";
 
-export type StepId = "basic" | "shipping" | "prize" | "confirm";
+export type StepId = "basic" | "shipping" | "prizeSelection" | "prize" | "confirm";
 
 export type FieldType =
   | "text"
@@ -55,6 +55,13 @@ export const steps: StepConfig[] = [
       { name: "city", label: "City", type: "city", required: true },
       { name: "postalCode", label: "Postal Code", type: "text", required: true },
     ],
+  },
+  {
+    id: "prizeSelection",
+    title: "Select Your Prizes",
+    subtitle:
+      "Choose which prizes you're claiming. You can select multiple prizes.",
+    fields: [],
   },
   {
     id: "prize",

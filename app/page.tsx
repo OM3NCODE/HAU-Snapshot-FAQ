@@ -86,12 +86,12 @@ export default function HomePage() {
 					/>
 				</div>
 
-				<div className="absolute -right-32 -bottom-20 w-[380px] sm:w-[520px] lg:w-[680px] xl:w-[800px] pointer-events-none">
+				<div className="absolute -right-16 -bottom-10 w-[260px] sm:w-[360px] lg:w-[480px] xl:w-[560px] pointer-events-none">
 					<Image
 						src="/assets/Home_Page/Hauwee Right .png"
 						alt="Mascot on the right"
-						width={900}
-						height={900}
+						width={700}
+						height={700}
 						className="w-full h-auto"
 						priority
 						unoptimized
@@ -177,7 +177,7 @@ export default function HomePage() {
 							WHO WE ARE
 						</h1>
 
-						<div className="space-y-6 font-montserrat text-lg sm:text-xl md:text-2xl text-white/85 leading-relaxed text-left" style={{ letterSpacing: "0.05em" }}>
+						<div className="mt-20 space-y-6 font-montserrat text-base sm:text-lg md:text-xl text-white/85 leading-relaxed text-left" style={{ letterSpacing: "0.05em" }}>
 							<p>
 								We're a one-year-old Web3 project building across BTC Runes and Solana (proud holders of Rune #1934). Through every market pump, dump, and sideways meme zone, we've been creating real opportunities for our community — vibing, building, and growing together actually shows what this hub is all about.
 							</p>
@@ -260,12 +260,12 @@ export default function HomePage() {
 					</Link>
 				</div>
 
-				<div className="absolute -right-32 -bottom-20 w-[380px] sm:w-[520px] lg:w-[680px] xl:w-[800px] pointer-events-none">
+				<div className="absolute -right-16 -bottom-10 w-[260px] sm:w-[360px] lg:w-[480px] xl:w-[560px] pointer-events-none">
 					<Image
 						src="/assets/Home_Page/CTA Icon.png"
 						alt="CTA Icon"
-						width={900}
-						height={900}
+						width={700}
+						height={700}
 						className="w-full h-auto"
 						unoptimized
 					/>

@@ -62,7 +62,7 @@ export default function Navbar() {
               href="https://x.com/HighAsUnicorn" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="block w-[40px] h-[40px] lg:w-[70px] lg:h-[70px] hover:opacity-80 transition-opacity"
+              className="block w-[28px] h-[28px] lg:w-[40px] lg:h-[40px] hover:opacity-80 transition-opacity"
             >
               <Image 
                   src="/assets/X.png" 
@@ -79,7 +79,7 @@ export default function Navbar() {
               href="https://discord.gg/TDVMeFr4kK" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="block w-[40px] h-[40px] lg:w-[70px] lg:h-[70px] hover:opacity-80 transition-opacity"
+              className="block w-[28px] h-[28px] lg:w-[40px] lg:h-[40px] hover:opacity-80 transition-opacity"
             >
               <Image 
                   src="/assets/Discord.png" 

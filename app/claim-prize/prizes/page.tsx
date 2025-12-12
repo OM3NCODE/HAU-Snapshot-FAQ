@@ -1,20 +1,41 @@
 "use client";
 // Page for showing the prizes when the api call returns winning traits in the users wallet
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { Info } from "lucide-react";
 import { useRouter } from "next/navigation";
 import PrizeCarousel from "@/components/PrizeCarousel";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { mockPrizes } from "@/data/prizes";
+import { fetchPrizesFromAPI, transformApiToPrizes, type TraitPrizeMapping } from "@/data/prizes";
 
 export default function PrizesPage() {
   const router = useRouter();
   const [showInfo, setShowInfo] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const prizes = mockPrizes; // Replace with actual API data
+  const [prizes, setPrizes] = useState<TraitPrizeMapping[]>([]);
+  const [loadingPrizes, setLoadingPrizes] = useState(true);
+
+  // Fetch prizes from API on mount
+  useEffect(() => {
+    async function loadPrizes() {
+      try {
+        setLoadingPrizes(true);
+        // TODO: Get session token from auth/wallet
+        const sessionToken = undefined; // Replace with actual token
+        const apiResponse = await fetchPrizesFromAPI(sessionToken);
+        const fetchedPrizes = transformApiToPrizes(apiResponse); // Get ALL prizes (won, regardless of claimable)
+        setPrizes(fetchedPrizes);
+      } catch (error) {
+        console.error("Failed to fetch prizes:", error);
+        setPrizes([]);
+      } finally {
+        setLoadingPrizes(false);
+      }
+    }
+    loadPrizes();
+  }, []);
 
   // Check if user has any IRL prizes
   const hasIRLPrizes = prizes.some((prize) => prize.isIRL);
@@ -32,7 +53,7 @@ export default function PrizesPage() {
     // try {
     //   const response = await fetch('/api/prepare-form', {
     //     method: 'POST',
-    //     body: JSON.stringify({ walletAddress, prizeIds: prizes.map(p => p.id) }),
+    //     body: JSON.stringify({ walletAddress, sessionToken }),
     //   });
     //   const data = await response.json();
     //   // Use data as needed before navigation
@@ -43,11 +64,21 @@ export default function PrizesPage() {
     // }
 
     if (hasIRLPrizes) {
-      router.push("/IRL-Form");
+      // TODO: Pass session token to IRL form
+      router.push("/IRL-Form?token=mock-session-token");
     } else {
       router.push("/claim-prize/token-only");
     }
   };
+
+  // Show loading state while fetching prizes
+  if (loadingPrizes) {
+    return (
+      <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-[#1A071D] via-[#2D0D32] to-[#6D1A7A] flex items-center justify-center">
+        <LoadingSpinner message="Loading your prizes..." showCharacter={true} />
+      </div>
+    );
+  }
 
   // Create particle elements for confetti burst effect
   const particles = Array.from({ length: 80 }).map((_, i) => ({
@@ -152,7 +183,7 @@ export default function PrizesPage() {
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.6 }}
-          className="font-sugar text-[44px] sm:text-[64px] md:text-[90px] lg:text-[120px] text-center leading-[0.85] tracking-widest relative z-20 px-4"
+          className="font-sugar text-[44px] sm:text-[64px] md:text-[90px] lg:text-[80px] text-center leading-[0.85] tracking-widest relative z-20 px-4"
           style={{
             color: "#FFD700", // Golden yellow text
             WebkitTextStroke: "20px #FF00FC", // Pink stroke

@@ -35,7 +35,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className="text-[80%]">
       <body
         className={`${montserrat.variable} ${luckiestGuy.variable} ${sugarBomb.variable} antialiased bg-hau-gradient text-white min-h-screen flex flex-col`}
       >

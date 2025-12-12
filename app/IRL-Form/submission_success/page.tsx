@@ -29,7 +29,7 @@ export default function TokenOnlyPage() {
             </div>
 
             <main
-                className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pt-0 pb-[340px] text-center"
+                className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pt-0 pb-[300px] text-center"
                 style={{ fontFamily: "var(--font-montserrat)" }}
             >
                 <motion.div
@@ -49,7 +49,7 @@ export default function TokenOnlyPage() {
                 </motion.div>
 
                 <motion.h1
-                    className="mt-6 font-sugar text-[72px] leading-none tracking-wide text-white drop-shadow-[0_0_25px_rgba(255,0,252,0.7)]"
+                    className="mt-6 font-sugar text-[55px] leading-none tracking-wide text-white drop-shadow-[0_0_25px_rgba(255,0,252,0.7)]"
                     style={{
                         WebkitTextStroke: "16px #ff00fc",
                         paintOrder: "stroke fill",
@@ -62,7 +62,7 @@ export default function TokenOnlyPage() {
                 </motion.h1>
 
                 <motion.p
-                    className="mt-[23px] font-sugar text-[48px] uppercase leading-tight text-[#E7C2FF]"
+                    className="mt-[23px] font-sugar text-[40px] uppercase leading-tight text-[#E7C2FF]"
                     style={{
                         WebkitTextStroke: "16px #320052",
                         paintOrder: "stroke fill",
@@ -88,12 +88,12 @@ export default function TokenOnlyPage() {
                 </motion.div>
 
                 <motion.div
-                    className="pointer-events-none fixed inset-x-0 bottom-[-90px] sm:bottom-[-115px] md:bottom-[-110px] flex justify-center"
+                    className="pointer-events-none fixed inset-x-0 bottom-[-50px] flex justify-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6, ease: "easeOut", delay: 0.35 }}
                 >
-                    <div className="relative h-[300px] w-[300px] sm:h-[350px] sm:w-[350px] md:h-[420px] md:w-[420px]">
+                    <div className="relative h-[150px] w-[150px] sm:h-[180px] sm:w-[180px] md:h-[220px] md:w-[220px]">
                         <Image
                             src="/assets/Confirmation/Confirm-HAUWEE.png"
                             alt="HAUWEE character"
